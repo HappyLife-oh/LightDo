@@ -1,0 +1,170 @@
+name: Release Desktop Builds
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify-release-tag:
+    name: Verify Release Tag
+    runs-on: ubuntu-22.04
+    outputs:
+      tag_name: ${{ steps.meta.outputs.tag_name }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Validate tag format and branch
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG_NAME="${GITHUB_REF_NAME}"
+
+          if [[ ! "${TAG_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag ${TAG_NAME} is not a valid release tag like v1.2.3"
+            exit 1
+          fi
+
+          git fetch origin main --depth=1
+
+          if ! git merge-base --is-ancestor "${GITHUB_SHA}" "origin/main"; then
+            echo "Tag ${TAG_NAME} does not point to a commit on origin/main"
+            exit 1
+          fi
+
+          echo "tag_name=${TAG_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "version=${TAG_NAME#v}" >> "${GITHUB_OUTPUT}"
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: verify-release-tag
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS x64
+            artifact_suffix: macos-x64
+            runner: macos-14
+            build_command: flutter build macos --release --build-name="${VERSION}" --build-number="${BUILD_NUMBER}"
+            archive_command: |
+              mkdir -p dist
+              ditto -c -k --sequesterRsrc --keepParent "build/macos/Build/Products/Release/lightdo.app" "dist/lightdo-${TAG_NAME}-macos-x64.zip"
+          - name: macOS arm64
+            artifact_suffix: macos-arm64
+            runner: macos-14
+            build_command: flutter build macos --release --build-name="${VERSION}" --build-number="${BUILD_NUMBER}"
+            archive_command: |
+              mkdir -p dist
+              ditto -c -k --sequesterRsrc --keepParent "build/macos/Build/Products/Release/lightdo.app" "dist/lightdo-${TAG_NAME}-macos-arm64.zip"
+          - name: Windows x64
+            artifact_suffix: windows-x64
+            runner: windows-2022
+            build_command: flutter build windows --release --build-name="${VERSION}" --build-number="${BUILD_NUMBER}"
+            archive_command: |
+              mkdir -p dist
+              stage="dist/lightdo-${TAG_NAME}-windows-x64"
+              mkdir -p "${stage}"
+              cp -R build/windows/x64/runner/Release/* "${stage}/"
+              cd dist && powershell -Command "Compress-Archive -Path 'lightdo-${TAG_NAME}-windows-x64' -DestinationPath 'lightdo-${TAG_NAME}-windows-x64.zip' -Force"
+          - name: Linux x64
+            artifact_suffix: linux-x64
+            runner: ubuntu-22.04
+            build_command: flutter build linux --release --build-name="${VERSION}" --build-number="${BUILD_NUMBER}"
+            archive_command: |
+              mkdir -p dist
+              stage_dir="dist/lightdo-${TAG_NAME}-linux-x64"
+              rm -rf "${stage_dir}"
+              mkdir -p "${stage_dir}"
+              cp -R build/linux/x64/release/bundle/. "${stage_dir}/"
+              tar -C dist -czf "dist/lightdo-${TAG_NAME}-linux-x64.tar.gz" "lightdo-${TAG_NAME}-linux-x64"
+    env:
+      TAG_NAME: ${{ needs.verify-release-tag.outputs.tag_name }}
+      VERSION: ${{ needs.verify-release-tag.outputs.version }}
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1508160852fb97248640997f7cfb38da241df0ba # v2.9.1
+        with:
+          flutter-version: '3.41.6'
+          cache: true
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libappindicator3-dev libkeybinder-3.0-dev
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build desktop app
+        shell: bash
+        run: ${{ matrix.build_command }}
+
+      - name: Package desktop app
+        shell: bash
+        run: ${{ matrix.archive_command }}
+
+      - name: Upload packaged artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-${{ matrix.artifact_suffix }}
+          path: |
+            dist/*.zip
+            dist/*.tar.gz
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release
+    if: always() && needs.verify-release-tag.result == 'success' && !cancelled()
+    needs:
+      - verify-release-tag
+      - build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download packaged artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: release-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Check for artifacts
+        id: check
+        shell: bash
+        run: |
+          count=$(find release-assets -type f \( -name '*.zip' -o -name '*.tar.gz' \) 2>/dev/null | wc -l)
+          if [ "$count" -eq 0 ]; then
+            echo "No artifacts found, skipping release"
+            echo "has_artifacts=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found $count artifact(s)"
+            echo "has_artifacts=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish release
+        if: steps.check.outputs.has_artifacts == 'true'
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
+        with:
+          tag_name: ${{ needs.verify-release-tag.outputs.tag_name }}
+          files: release-assets/*
+          generate_release_notes: true
