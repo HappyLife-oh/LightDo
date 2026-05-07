@@ -1,0 +1,87 @@
+name: CI Verify Build
+
+on:
+  push:
+    branches:
+      - main
+      - feat/**
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Dart Analyze
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Run static analysis
+        run: flutter analyze
+
+  build-windows:
+    name: Build Windows x64
+    needs: analyze
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build Windows
+        run: flutter build windows --release
+
+  build-macos:
+    name: Build macOS
+    needs: analyze
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build macOS
+        run: flutter build macos --release
+
+  build-linux:
+    name: Build Linux x64
+    needs: analyze
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+          cache: true
+
+      - name: Install Linux deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libappindicator3-dev libkeybinder-3.0-dev
+
+      - run: flutter pub get
+
+      - name: Build Linux
+        run: flutter build linux --release
