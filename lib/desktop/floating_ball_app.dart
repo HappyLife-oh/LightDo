@@ -428,16 +428,15 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
     final ballCenterX = position.dx + _ballWindowSize.width / 2;
     final ballCenterY = position.dy + _ballWindowSize.height / 2;
     final visibleY = display.visiblePosition?.dy ?? 0;
-    final visibleHeight = display.visibleSize?.height ?? display.size.height;
 
-    int newX = position.dx;
-    int newY = position.dy;
+    double newX = position.dx;
+    double newY = position.dy;
 
     // Horizontal snap
     if (ballCenterX - visibleX < _snapThreshold) {
       newX = visibleX;
     } else if (visibleX + visibleWidth - ballCenterX < _snapThreshold) {
-      newX = (visibleX + visibleWidth - _ballWindowSize.width).toInt();
+      newX = visibleX + visibleWidth - _ballWindowSize.width;
     }
 
     // Vertical snap — only snap to top edge
@@ -447,7 +446,7 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
 
     if (newX != position.dx || newY != position.dy) {
       await windowManager.setPosition(
-        Offset(newX.toDouble(), newY.toDouble()),
+        Offset(newX, newY),
       );
       if (mounted) setState(() => _isSnapped = true);
     } else {
@@ -547,7 +546,7 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
                 _ballOffsetInMenu.dx + _ballWindowSize.width / 2,
                 _ballOffsetInMenu.dy + _ballWindowSize.height / 2,
               ),
-              onAction: _handleMenuAction,
+              action: _handleMenuAction,
               onDismiss: () => _closeQuickMenu(),
             ),
         ],

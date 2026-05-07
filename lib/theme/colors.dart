@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 ///
 /// Every color used across the app is defined here so themes (light/dark)
 /// can swap the underlying values without touching widget code.
-abstract final class AppColors {
+class AppColors {
+  const AppColors._();
   // ── Primary ──────────────────────────────────────────────────────────
   static const primary = Color(0xFF1D6F5F);
   static const primaryLight = Color(0xFF0D9488);

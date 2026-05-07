@@ -90,7 +90,7 @@ class _BallQuickMenuState extends State<BallQuickMenu>
   }
 
   Offset _itemPosition(int index) {
-    const total = _menuItems.length;
+    final total = _menuItems.length;
     // Arc above the ball: from -90° (left) to +90° (right)
     final startAngle = -math.pi * 0.58;
     final endAngle = math.pi * 0.58;
