@@ -977,14 +977,14 @@ class _CompletedPanelState extends State<_CompletedPanel> {
                       '已完成',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: const AppColors.completedTitle,
+                        color: AppColors.completedTitle,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${widget.completedTodos.length} 项',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const AppColors.completedCount,
+                        color: AppColors.completedCount,
                       ),
                     ),
                   ],
@@ -1084,7 +1084,7 @@ class _CompletedPreviewStrip extends StatelessWidget {
           Text(
             '今天已完成 ${completedToday.length} 项',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: const AppColors.textMuted,
+              color: AppColors.textMuted,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1100,9 +1100,9 @@ class _CompletedPreviewStrip extends StatelessWidget {
                       width: 24,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: const AppColors.previewCheckBg,
+                        color: AppColors.previewCheckBg,
                         shape: BoxShape.circle,
-                        border: Border.all(color: const AppColors.previewCheckBorder),
+                        border: Border.all(color: AppColors.previewCheckBorder),
                       ),
                       child: const Icon(
                         Icons.check_rounded,
@@ -1118,7 +1118,7 @@ class _CompletedPreviewStrip extends StatelessWidget {
                     height: 24,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     decoration: BoxDecoration(
-                      color: const AppColors.previewOverflowBg,
+                      color: AppColors.previewOverflowBg,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     alignment: Alignment.center,
@@ -1164,41 +1164,41 @@ class _TodoCard extends StatelessWidget {
         ? TodoDeadlineState.normal
         : deadlineState;
     final cardBackground = switch (visualState) {
-      TodoDeadlineState.overdue => const AppColors.cardOverdueBg,
-      TodoDeadlineState.dueSoon => const AppColors.cardDueSoonBg,
+      TodoDeadlineState.overdue => AppColors.cardOverdueBg,
+      TodoDeadlineState.dueSoon => AppColors.cardDueSoonBg,
       TodoDeadlineState.normal => Colors.transparent,
     };
     final cardBorder = switch (visualState) {
-      TodoDeadlineState.overdue => const AppColors.cardOverdueBorder,
-      TodoDeadlineState.dueSoon => const AppColors.cardDueSoonBorder,
+      TodoDeadlineState.overdue => AppColors.cardOverdueBorder,
+      TodoDeadlineState.dueSoon => AppColors.cardDueSoonBorder,
       TodoDeadlineState.normal => AppColors.sectionBorder,
     };
     final badgeBackground = switch (visualState) {
-      TodoDeadlineState.overdue => const AppColors.cardOverdueBadgeBg,
-      TodoDeadlineState.dueSoon => const AppColors.cardDueSoonBadgeBg,
+      TodoDeadlineState.overdue => AppColors.cardOverdueBadgeBg,
+      TodoDeadlineState.dueSoon => AppColors.cardDueSoonBadgeBg,
       TodoDeadlineState.normal => Colors.transparent,
     };
     final badgeForeground = switch (visualState) {
-      TodoDeadlineState.overdue => const AppColors.cardOverdueBadgeText,
-      TodoDeadlineState.dueSoon => const AppColors.cardDueSoonBadgeText,
-      TodoDeadlineState.normal => const AppColors.cardNormalSummary,
+      TodoDeadlineState.overdue => AppColors.cardOverdueBadgeText,
+      TodoDeadlineState.dueSoon => AppColors.cardDueSoonBadgeText,
+      TodoDeadlineState.normal => AppColors.cardNormalSummary,
     };
     final summaryColor = switch (visualState) {
-      TodoDeadlineState.overdue => const AppColors.cardOverdueSummary,
-      TodoDeadlineState.dueSoon => const AppColors.cardDueSoonSummary,
-      TodoDeadlineState.normal => const AppColors.cardNormalSummary,
+      TodoDeadlineState.overdue => AppColors.cardOverdueSummary,
+      TodoDeadlineState.dueSoon => AppColors.cardDueSoonSummary,
+      TodoDeadlineState.normal => AppColors.cardNormalSummary,
     };
     final summary = todo.summary;
     final titleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
       fontWeight: FontWeight.w600,
       height: 1.25,
       color: todo.isCompleted
-          ? const AppColors.cardCompletedTitle
+          ? AppColors.cardCompletedTitle
           : visualState == TodoDeadlineState.overdue
-          ? const AppColors.cardOverdueTitle
+          ? AppColors.cardOverdueTitle
           : visualState == TodoDeadlineState.dueSoon
-          ? const AppColors.cardDueSoonTitle
-          : const AppColors.cardNormalTitle,
+          ? AppColors.cardDueSoonTitle
+          : AppColors.cardNormalTitle,
       decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
     );
 
@@ -1470,7 +1470,7 @@ class _TodoScheduleDialogState extends State<_TodoScheduleDialog> {
                     : '支持精确到分钟，并可按每天、每周、每月重复。',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: const AppColors.emptyText),
+                ).textTheme.bodySmall?.copyWith(color: AppColors.emptyText),
               ),
             ],
           ),
@@ -1620,7 +1620,7 @@ class _TodoEditorDialogState extends State<_TodoEditorDialog> {
                     : '当前任务按 ${_draftRecurrence.label} 重复',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: const AppColors.emptyText),
+                ).textTheme.bodySmall?.copyWith(color: AppColors.emptyText),
               ),
             ],
           ],
@@ -1809,7 +1809,7 @@ class _SettingsDialogState extends State<_SettingsDialog> {
                       child: Text(
                         '已连接到电脑',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const AppColors.emptyIcon,
+                          color: AppColors.emptyIcon,
                         ),
                       ),
                     ),
@@ -1844,8 +1844,8 @@ class _SettingsDialogState extends State<_SettingsDialog> {
                               count == 0 ? '等待设备连接…' : '已连接 $count 台设备',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: count == 0
-                                    ? const AppColors.syncWaiting
-                                    : const AppColors.emptyIcon,
+                                    ? AppColors.syncWaiting
+                                    : AppColors.emptyIcon,
                               ),
                             );
                           },
@@ -1882,9 +1882,9 @@ class _InlineNotice extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const AppColors.errorBg,
+        color: AppColors.errorBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const AppColors.errorBorder),
+        border: Border.all(color: AppColors.errorBorder),
       ),
       child: Row(
         children: [
@@ -1935,7 +1935,7 @@ class _EmptyState extends StatelessWidget {
                 '从上方输入框添加第一条任务。',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const AppColors.emptyText,
+                  color: AppColors.emptyText,
                 ),
               ),
             ],
@@ -1964,7 +1964,7 @@ class _MiniEmptyState extends StatelessWidget {
         message,
         style: Theme.of(
           context,
-        ).textTheme.bodyMedium?.copyWith(color: const AppColors.textMuted),
+        ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
       ),
     );
   }
