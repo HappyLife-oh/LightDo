@@ -10,6 +10,7 @@ import 'package:screen_retriever/screen_retriever.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'ball_quick_menu.dart';
 import 'window_arguments.dart';
 import '../models/todo_item.dart';
 import '../services/lightdo_storage.dart';
@@ -48,6 +49,8 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
   static const double _launchTopPadding = 28;
   static const double _launchRightPadding = 24;
   static const double _snapThreshold = 30;
+  static final Size _menuWindowSize = const Size(220, 170);
+  static final Offset _ballOffsetInMenu = const Offset(72, 94);
 
   final LightDoStorage _storage = const FileLightDoStorage();
   final SystemTray _systemTray = SystemTray();
@@ -67,6 +70,7 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
   int _activeTodoCount = 0;
   bool _isHovered = false;
   bool _isSnapped = false;
+  bool _showQuickMenu = false;
   Timer? _overduePollTimer;
   Timer? _snapDebounceTimer;
 
@@ -451,6 +455,47 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
     }
   }
 
+  // ── Quick menu ──────────────────────────────────────────────────────
+
+  Future<void> _openQuickMenu() async {
+    if (_showQuickMenu || _coveredByMain) return;
+    // Stop breathing while menu is shown.
+    _breatheController.stop();
+    final position = await windowManager.getPosition();
+    // Expand window so menu items have room; keep ball visually in place.
+    await windowManager.setSize(_menuWindowSize);
+    final newX = position.dx - _ballOffsetInMenu.dx;
+    final newY = position.dy - _ballOffsetInMenu.dy;
+    await windowManager.setPosition(Offset(newX, newY));
+    if (mounted) setState(() => _showQuickMenu = true);
+  }
+
+  Future<void> _closeQuickMenu() async {
+    if (!_showQuickMenu) return;
+    final position = await windowManager.getPosition();
+    if (mounted) setState(() => _showQuickMenu = false);
+    // Restore ball size and screen position.
+    await windowManager.setSize(_ballWindowSize);
+    final restoredX = position.dx + _ballOffsetInMenu.dx;
+    final restoredY = position.dy + _ballOffsetInMenu.dy;
+    await windowManager.setPosition(Offset(restoredX, restoredY));
+    _startBreathing();
+  }
+
+  void _handleMenuAction(BallMenuAction action) {
+    switch (action) {
+      case BallMenuAction.newTodo:
+        unawaited(_openMainWindow());
+      case BallMenuAction.openMain:
+        unawaited(_openMainWindow());
+      case BallMenuAction.searchWeb:
+        // Placeholder — will open default browser
+        break;
+      case BallMenuAction.settings:
+        unawaited(_openMainWindow());
+    }
+  }
+
   // ── Build ────────────────────────────────────────────────────────────
 
   @override
@@ -469,16 +514,41 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
 
     return Material(
       type: MaterialType.transparency,
-      child: Center(
-        child: DragToMoveArea(
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              ball,
-              if (_activeTodoCount > 0) _buildBadge(),
-            ],
-          ),
-        ),
+      child: Stack(
+        children: [
+          // Ball area at the bottom of the expanded window (or centered if normal).
+          if (_showQuickMenu)
+            Positioned(
+              left: _ballOffsetInMenu.dx,
+              top: _ballOffsetInMenu.dy,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [ball, if (_activeTodoCount > 0) _buildBadge()],
+              ),
+            )
+          else
+            Center(
+              child: DragToMoveArea(
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ball,
+                    if (_activeTodoCount > 0) _buildBadge(),
+                  ],
+                ),
+              ),
+            ),
+          // Quick menu overlay
+          if (_showQuickMenu)
+            BallQuickMenu(
+              ballWindowCenter: Offset(
+                _ballOffsetInMenu.dx + _ballWindowSize.width / 2,
+                _ballOffsetInMenu.dy + _ballWindowSize.height / 2,
+              ),
+              onAction: _handleMenuAction,
+              onDismiss: () => _closeQuickMenu(),
+            ),
+        ],
       ),
     );
   }
@@ -497,7 +567,18 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
+          if (_showQuickMenu) {
+            unawaited(_closeQuickMenu());
+            return;
+          }
           unawaited(_openMainWindow());
+        },
+        onSecondaryTapUp: (_) {
+          if (_showQuickMenu) {
+            unawaited(_closeQuickMenu());
+          } else {
+            unawaited(_openQuickMenu());
+          }
         },
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 200),
