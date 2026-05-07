@@ -101,6 +101,14 @@ abstract final class AppColors {
   static const ballShadowColor = Color(0xFF1D6F5F); // with 0.18 alpha
   static const ballIconColor = Colors.white;
 
+  // ── Floating Ball – dark mode ────────────────────────────────────────
+  static const ballDarkNormalStart = Color(0xFF0D9488);
+  static const ballDarkNormalEnd = Color(0xFF14B8A6);
+  static const ballDarkOverdueStart = Color(0xFFDC2626);
+  static const ballDarkOverdueEnd = Color(0xFFB91C1C);
+  static const ballDarkCoveredStart = Color(0xFFCA8A04);
+  static const ballDarkCoveredEnd = Color(0xFF65A30D);
+
   // ── Dialog ───────────────────────────────────────────────────────────
   static const dialogHint = Color(0xFF6D827C);
 }

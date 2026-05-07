@@ -500,9 +500,11 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
     final gradientColors = _ballGradientColors(
       hasOverdueTodos: _hasOverdueTodos,
       coveredByMain: _coveredByMain,
+      isDark: isDark,
     );
     final borderColor = _hasOverdueTodos
         ? AppColors.ballBorderOverdue
@@ -648,13 +650,20 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
   List<Color> _ballGradientColors({
     required bool hasOverdueTodos,
     required bool coveredByMain,
+    required bool isDark,
   }) {
     if (hasOverdueTodos) {
-      return const [AppColors.ballOverdueStart, AppColors.ballOverdueEnd];
+      return isDark
+          ? const [AppColors.ballDarkOverdueStart, AppColors.ballDarkOverdueEnd]
+          : const [AppColors.ballOverdueStart, AppColors.ballOverdueEnd];
     }
     if (coveredByMain) {
-      return const [AppColors.ballCoveredStart, AppColors.ballCoveredEnd];
+      return isDark
+          ? const [AppColors.ballDarkCoveredStart, AppColors.ballDarkCoveredEnd]
+          : const [AppColors.ballCoveredStart, AppColors.ballCoveredEnd];
     }
-    return const [AppColors.ballNormalStart, AppColors.ballNormalEnd];
+    return isDark
+        ? const [AppColors.ballDarkNormalStart, AppColors.ballDarkNormalEnd]
+        : const [AppColors.ballNormalStart, AppColors.ballNormalEnd];
   }
 }

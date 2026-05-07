@@ -161,6 +161,8 @@ class LightDoApp extends StatelessWidget {
       title: 'LightDo',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
       home: LightDoHomePage(
         storage: storage ?? const FileLightDoStorage(),
         desktopIntegration: desktopIntegration ?? createDesktopIntegration(),
