@@ -1141,6 +1141,7 @@ class _CompletedPreviewStrip extends StatelessWidget {
 
 class _TodoCard extends StatelessWidget {
   const _TodoCard({
+    // ignore: unused_element_parameter
     super.key,
     required this.todo,
     required this.compact,
