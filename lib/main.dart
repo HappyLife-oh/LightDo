@@ -8,6 +8,8 @@ import 'package:window_manager/window_manager.dart';
 
 import 'desktop/floating_ball_app.dart';
 import 'desktop/window_arguments.dart';
+import 'theme/app_theme.dart';
+import 'theme/colors.dart';
 import 'models/app_settings.dart';
 import 'models/app_snapshot.dart';
 import 'models/todo_item.dart';
@@ -105,7 +107,7 @@ Future<void> _configureDesktopWindow(LightDoWindowRole role) async {
           minimumSize: Size(360, 600),
           center: true,
           title: 'LightDo',
-          backgroundColor: Color(0xFFF7F4ED),
+          backgroundColor: AppColors.scaffoldBody,
         );
   await windowManager.waitUntilReadyToShow(options, () async {
     if (role == LightDoWindowRole.floatingBall && !Platform.isMacOS) {
@@ -158,15 +160,7 @@ class LightDoApp extends StatelessWidget {
     return MaterialApp(
       title: 'LightDo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: Platform.isWindows ? 'Microsoft YaHei' : null,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1D6F5F),
-          brightness: Brightness.light,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF4F1E8),
-      ),
+      theme: AppTheme.light(),
       home: LightDoHomePage(
         storage: storage ?? const FileLightDoStorage(),
         desktopIntegration: desktopIntegration ?? createDesktopIntegration(),
@@ -585,7 +579,7 @@ class _LightDoHomePageState extends State<LightDoHomePage> {
         : ((completedTodos.length / _todos.length) * 100).round();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F4ED),
+      backgroundColor: AppColors.scaffoldBody,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -750,14 +744,14 @@ class _HeaderSection extends StatelessWidget {
                 'LightDo',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: const Color(0xFF1C2F2A),
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 '总计 $totalCount 项，进行中 $activeCount 项，已完成 $completedCount 项，完成率 $completedRate%',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF75817D),
+                  color: AppColors.textBody,
                 ),
               ),
             ],
@@ -767,19 +761,19 @@ class _HeaderSection extends StatelessWidget {
           onPressed: onOpenSettings,
           icon: const Icon(Icons.settings_outlined),
           tooltip: '设置',
-          color: const Color(0xFF4A5A55),
+          color: AppColors.textSettingsIcon,
         ),
         if (showWindowsBadge)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8ECE4),
+              color: AppColors.badgeBg,
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
               'Desktop',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: const Color(0xFF4D5B56),
+                color: AppColors.badgeText,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -809,7 +803,7 @@ class _ComposerCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.only(bottom: 8),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFD9DED4))),
+        border: Border(bottom: BorderSide(color: AppColors.composerDivider)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -818,7 +812,7 @@ class _ComposerCard extends StatelessWidget {
             children: [
               const Padding(
                 padding: EdgeInsets.only(right: 10),
-                child: Icon(Icons.add_rounded, color: Color(0xFF6C7A74)),
+                child: Icon(Icons.add_rounded, color: AppColors.composerIcon),
               ),
               Expanded(
                 child: TextField(
@@ -843,8 +837,8 @@ class _ComposerCard extends StatelessWidget {
                 ),
                 tooltip: '设置截止时间',
                 color: scheduleSummary == null
-                    ? const Color(0xFF6C7A74)
-                    : const Color(0xFF1D6F5F),
+                    ? AppColors.composerIcon
+                    : AppColors.composerIconActive,
               ),
               TextButton(onPressed: onSubmit, child: const Text('添加')),
             ],
@@ -861,13 +855,13 @@ class _ComposerCard extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE9EFE8),
+                    color: AppColors.chipBg,
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     scheduleSummary!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF335049),
+                      color: AppColors.chipText,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -907,7 +901,7 @@ class _TaskPanel extends StatelessWidget {
             title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF173C35),
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 6),
@@ -915,7 +909,7 @@ class _TaskPanel extends StatelessWidget {
             subtitle,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF78847F)),
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textBodyAlt),
           ),
           const SizedBox(height: 12),
           Expanded(child: child),
@@ -966,7 +960,7 @@ class _CompletedPanelState extends State<_CompletedPanel> {
     return Container(
       padding: const EdgeInsets.only(top: 14),
       decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFE2E5DD))),
+        border: Border(top: BorderSide(color: AppColors.sectionBorder)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -981,14 +975,14 @@ class _CompletedPanelState extends State<_CompletedPanel> {
                       '已完成',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF33413D),
+                        color: const AppColors.completedTitle,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${widget.completedTodos.length} 项',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF7A8580),
+                        color: const AppColors.completedCount,
                       ),
                     ),
                   ],
@@ -1088,7 +1082,7 @@ class _CompletedPreviewStrip extends StatelessWidget {
           Text(
             '今天已完成 ${completedToday.length} 项',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: const Color(0xFF70837E),
+              color: const AppColors.textMuted,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1104,14 +1098,14 @@ class _CompletedPreviewStrip extends StatelessWidget {
                       width: 24,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE5F0E8),
+                        color: const AppColors.previewCheckBg,
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF94B39E)),
+                        border: Border.all(color: const AppColors.previewCheckBorder),
                       ),
                       child: const Icon(
                         Icons.check_rounded,
                         size: 14,
-                        color: Color(0xFF2E6C60),
+                        color: AppColors.emptyIcon,
                       ),
                     ),
                   ),
@@ -1122,14 +1116,14 @@ class _CompletedPreviewStrip extends StatelessWidget {
                     height: 24,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE9ECE7),
+                      color: const AppColors.previewOverflowBg,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     alignment: Alignment.center,
                     child: Text(
                       '+$overflow',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: const Color(0xFF6C7A74),
+                        color: AppColors.composerIcon,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1168,41 +1162,41 @@ class _TodoCard extends StatelessWidget {
         ? TodoDeadlineState.normal
         : deadlineState;
     final cardBackground = switch (visualState) {
-      TodoDeadlineState.overdue => const Color(0xFFFFF0EC),
-      TodoDeadlineState.dueSoon => const Color(0xFFFFF8E5),
+      TodoDeadlineState.overdue => const AppColors.cardOverdueBg,
+      TodoDeadlineState.dueSoon => const AppColors.cardDueSoonBg,
       TodoDeadlineState.normal => Colors.transparent,
     };
     final cardBorder = switch (visualState) {
-      TodoDeadlineState.overdue => const Color(0xFFE07A63),
-      TodoDeadlineState.dueSoon => const Color(0xFFD3A446),
-      TodoDeadlineState.normal => const Color(0xFFE2E5DD),
+      TodoDeadlineState.overdue => const AppColors.cardOverdueBorder,
+      TodoDeadlineState.dueSoon => const AppColors.cardDueSoonBorder,
+      TodoDeadlineState.normal => AppColors.sectionBorder,
     };
     final badgeBackground = switch (visualState) {
-      TodoDeadlineState.overdue => const Color(0xFFF7D2C8),
-      TodoDeadlineState.dueSoon => const Color(0xFFF5E2B3),
+      TodoDeadlineState.overdue => const AppColors.cardOverdueBadgeBg,
+      TodoDeadlineState.dueSoon => const AppColors.cardDueSoonBadgeBg,
       TodoDeadlineState.normal => Colors.transparent,
     };
     final badgeForeground = switch (visualState) {
-      TodoDeadlineState.overdue => const Color(0xFFAC4C3A),
-      TodoDeadlineState.dueSoon => const Color(0xFF94691A),
-      TodoDeadlineState.normal => const Color(0xFF728781),
+      TodoDeadlineState.overdue => const AppColors.cardOverdueBadgeText,
+      TodoDeadlineState.dueSoon => const AppColors.cardDueSoonBadgeText,
+      TodoDeadlineState.normal => const AppColors.cardNormalSummary,
     };
     final summaryColor = switch (visualState) {
-      TodoDeadlineState.overdue => const Color(0xFFB36456),
-      TodoDeadlineState.dueSoon => const Color(0xFF9B7626),
-      TodoDeadlineState.normal => const Color(0xFF728781),
+      TodoDeadlineState.overdue => const AppColors.cardOverdueSummary,
+      TodoDeadlineState.dueSoon => const AppColors.cardDueSoonSummary,
+      TodoDeadlineState.normal => const AppColors.cardNormalSummary,
     };
     final summary = todo.summary;
     final titleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
       fontWeight: FontWeight.w600,
       height: 1.25,
       color: todo.isCompleted
-          ? const Color(0xFF6F837D)
+          ? const AppColors.cardCompletedTitle
           : visualState == TodoDeadlineState.overdue
-          ? const Color(0xFF7E2F22)
+          ? const AppColors.cardOverdueTitle
           : visualState == TodoDeadlineState.dueSoon
-          ? const Color(0xFF7D5D17)
-          : const Color(0xFF203B35),
+          ? const AppColors.cardDueSoonTitle
+          : const AppColors.cardNormalTitle,
       decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
     );
 
@@ -1474,7 +1468,7 @@ class _TodoScheduleDialogState extends State<_TodoScheduleDialog> {
                     : '支持精确到分钟，并可按每天、每周、每月重复。',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6D827C)),
+                ).textTheme.bodySmall?.copyWith(color: const AppColors.emptyText),
               ),
             ],
           ),
@@ -1624,7 +1618,7 @@ class _TodoEditorDialogState extends State<_TodoEditorDialog> {
                     : '当前任务按 ${_draftRecurrence.label} 重复',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6D827C)),
+                ).textTheme.bodySmall?.copyWith(color: const AppColors.emptyText),
               ),
             ],
           ],
@@ -1813,7 +1807,7 @@ class _SettingsDialogState extends State<_SettingsDialog> {
                       child: Text(
                         '已连接到电脑',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF2E6C60),
+                          color: const AppColors.emptyIcon,
                         ),
                       ),
                     ),
@@ -1848,8 +1842,8 @@ class _SettingsDialogState extends State<_SettingsDialog> {
                               count == 0 ? '等待设备连接…' : '已连接 $count 台设备',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: count == 0
-                                    ? const Color(0xFF9E9E9E)
-                                    : const Color(0xFF2E6C60),
+                                    ? const AppColors.syncWaiting
+                                    : const AppColors.emptyIcon,
                               ),
                             );
                           },
@@ -1886,13 +1880,13 @@ class _InlineNotice extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E2),
+        color: const AppColors.errorBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFD29A)),
+        border: Border.all(color: const AppColors.errorBorder),
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Color(0xFFAF6700)),
+          const Icon(Icons.warning_amber_rounded, color: AppColors.errorIcon),
           const SizedBox(width: 10),
           Expanded(child: Text(message)),
         ],
@@ -1923,7 +1917,7 @@ class _EmptyState extends StatelessWidget {
                 child: const Icon(
                   Icons.checklist_rounded,
                   size: 32,
-                  color: Color(0xFF2E6C60),
+                  color: AppColors.emptyIcon,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1931,7 +1925,7 @@ class _EmptyState extends StatelessWidget {
                 '现在没有进行中的任务',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF173C35),
+                  color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 6),
@@ -1939,7 +1933,7 @@ class _EmptyState extends StatelessWidget {
                 '从上方输入框添加第一条任务。',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6D827C),
+                  color: const AppColors.emptyText,
                 ),
               ),
             ],
@@ -1968,7 +1962,7 @@ class _MiniEmptyState extends StatelessWidget {
         message,
         style: Theme.of(
           context,
-        ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF70837E)),
+        ).textTheme.bodyMedium?.copyWith(color: const AppColors.textMuted),
       ),
     );
   }

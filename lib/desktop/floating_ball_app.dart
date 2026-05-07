@@ -13,6 +13,8 @@ import 'package:window_manager/window_manager.dart';
 import 'window_arguments.dart';
 import '../models/todo_item.dart';
 import '../services/lightdo_storage.dart';
+import '../theme/app_theme.dart';
+import '../theme/colors.dart';
 
 class FloatingBallApp extends StatelessWidget {
   const FloatingBallApp({super.key, required this.ballWindowId});
@@ -23,15 +25,7 @@ class FloatingBallApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: Platform.isWindows ? 'Microsoft YaHei' : null,
-        scaffoldBackgroundColor: Colors.transparent,
-        canvasColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-      ),
+      theme: AppTheme.floatingBall(),
       home: FloatingBallHome(ballWindowId: ballWindowId),
     );
   }
@@ -398,10 +392,10 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
       coveredByMain: _coveredByMain,
     );
     final borderColor = _hasOverdueTodos
-        ? const Color(0xFFFFC2B8)
+        ? AppColors.ballBorderOverdue
         : _coveredByMain
-        ? const Color(0xFFF6E3A2)
-        : Colors.white.withValues(alpha: 0.82);
+        ? AppColors.ballBorderCovered
+        : AppColors.ballBorderNormal.withValues(alpha: 0.82);
 
     return Material(
       type: MaterialType.transparency,
@@ -425,7 +419,7 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
                 border: Border.all(color: borderColor, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF1D6F5F).withValues(alpha: 0.18),
+                    color: AppColors.ballShadowColor.withValues(alpha: 0.18),
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),
@@ -433,7 +427,7 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
               ),
               child: const Icon(
                 Icons.checklist_rounded,
-                color: Colors.white,
+                color: AppColors.ballIconColor,
                 size: 28,
               ),
             ),
@@ -448,11 +442,11 @@ class _FloatingBallHomeState extends State<FloatingBallHome>
     required bool coveredByMain,
   }) {
     if (hasOverdueTodos) {
-      return const [Color(0xFFE46048), Color(0xFFCC3A3A)];
+      return const [AppColors.ballOverdueStart, AppColors.ballOverdueEnd];
     }
     if (coveredByMain) {
-      return const [Color(0xFFD4AF4F), Color(0xFF91B64F)];
+      return const [AppColors.ballCoveredStart, AppColors.ballCoveredEnd];
     }
-    return const [Color(0xD91A7A68), Color(0xD93CA692)];
+    return const [AppColors.ballNormalStart, AppColors.ballNormalEnd];
   }
 }
