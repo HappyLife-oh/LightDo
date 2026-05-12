@@ -5,7 +5,6 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:local_notifier/local_notifier.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'desktop/floating_ball_app.dart';
@@ -225,7 +224,7 @@ class _LightDoHomePageState extends State<LightDoHomePage> {
   late SyncService _syncService = SyncService(nodeId: 'test');
   StreamSubscription<List<TodoItem>>? _syncSub;
 
-  final UndoHistory _undoHistory = UndoHistory();
+  final TodoUndoHistory _undoHistory = TodoUndoHistory();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final FocusNode _mainFocusNode = FocusNode();
@@ -803,17 +802,6 @@ class _LightDoHomePageState extends State<LightDoHomePage> {
     _scheduleSave();
   }
 
-  void _updateTodoTags(String todoId, List<String> tags) {
-    final todo = _todos.firstWhere((t) => t.id == todoId);
-    final updated = todo.copyWith(tags: tags);
-    setState(() {
-      _todos = _todos.map((t) => t.id == todoId ? updated : t).toList(growable: false);
-    });
-    _syncService.recordMutation(updated);
-    _syncService.notifyPeers();
-    _scheduleSave();
-  }
-
   void _enterMultiSelect(String todoId) {
     setState(() {
       _multiSelectMode = true;
@@ -1159,17 +1147,12 @@ class _LightDoHomePageState extends State<LightDoHomePage> {
     });
   }
 
-  LocalNotifier? _localNotifier;
   bool _notificationFailed = false;
 
   Future<void> _checkNotifications() async {
     if (!_settings.enableNotifications || !mounted) return;
     if (!(Platform.isWindows || Platform.isMacOS || Platform.isLinux)) return;
-
     if (_notificationFailed) return;
-
-    _localNotifier ??= LocalNotifier()
-      ..initialize(appName: 'LightDo');
 
     final now = DateTime.now();
     for (final todo in _activeTodos) {
@@ -1179,15 +1162,37 @@ class _LightDoHomePageState extends State<LightDoHomePage> {
         _notifiedTodoIds.add(todo.id);
         final title = state == TodoDeadlineState.overdue ? '已过期' : '即将到期';
         try {
-          await _localNotifier!.notify(
-            title: 'LightDo - $title',
-            body: todo.title,
-          );
+          await _showSystemNotification('LightDo - $title', todo.title);
         } catch (e) {
           _notificationFailed = true;
           debugPrint('LightDo notification failed: $e');
         }
       }
+    }
+  }
+
+  Future<void> _showSystemNotification(String title, String body) async {
+    if (Platform.isMacOS) {
+      await Process.run('osascript', [
+        '-e',
+        'display notification "$body" with title "$title"',
+      ]);
+    } else if (Platform.isWindows) {
+      // Windows toast via PowerShell — silently fail if unavailable
+      await Process.run('powershell', [
+        '-Command',
+        '''
+        [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > \$null
+        \$template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
+        \$texts = \$template.GetElementsByTagName('text')
+        \$texts.Item(0).AppendChild(\$template.CreateTextNode('$title'))
+        \$texts.Item(1).AppendChild(\$template.CreateTextNode('$body'))
+        \$toast = New-Object Windows.UI.Notifications.ToastNotification(\$template)
+        [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('LightDo').Show(\$toast)
+        ''',
+      ]);
+    } else if (Platform.isLinux) {
+      await Process.run('notify-send', [title, body]);
     }
   }
 
@@ -2225,7 +2230,7 @@ class _TodoEditorDialogState extends State<_TodoEditorDialog> {
   );
   late DateTime? _draftDueAt = widget.todo.dueAt;
   late TodoRecurrence _draftRecurrence = widget.todo.recurrence;
-  late List<String> _draftTags = List<String>.from(widget.todo.tags);
+  final List<String> _draftTags = List<String>.from(widget.todo.tags);
 
   @override
   void dispose() {

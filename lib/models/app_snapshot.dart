@@ -1,5 +1,4 @@
 import 'app_settings.dart';
-import 'tag.dart';
 import 'todo_item.dart';
 
 class AppSnapshot {

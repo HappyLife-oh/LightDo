@@ -16,7 +16,7 @@ class UndoEntry {
   final TodoItem? after;
 }
 
-class UndoHistory {
+class TodoUndoHistory {
   static const int _maxDepth = 50;
 
   final List<UndoEntry> _undoStack = [];

@@ -17,12 +17,10 @@ abstract final class AppTheme {
   static Color _seedFor({required Brightness brightness, int accentIndex = 0}) {
     final base = accentSeeds[accentIndex.clamp(0, accentSeeds.length - 1)];
     if (brightness == Brightness.dark) {
-      return Color.fromARGB(
-        255,
-        (base.red + 128).clamp(0, 255),
-        (base.green + 128).clamp(0, 255),
-        (base.blue + 128).clamp(0, 255),
-      );
+      final r = (base.r * 255.0).round().clamp(0, 255);
+      final g = (base.g * 255.0).round().clamp(0, 255);
+      final b = (base.b * 255.0).round().clamp(0, 255);
+      return Color.fromARGB(255, (r + 128).clamp(0, 255), (g + 128).clamp(0, 255), (b + 128).clamp(0, 255));
     }
     return base;
   }
